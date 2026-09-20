@@ -19,12 +19,14 @@ Usage:
     python export_onnx.py --checkpoint checkpoints/best_model.pt --output models/sr_network.onnx --dynamic-axes
 """
 import argparse
-import torch
 import sys
+
+import torch
+
 sys.path.insert(0, '.')
 
-from models.sr_network import SRNetwork
 from models.spectral_unet import SpectralUNet
+from models.sr_network import SRNetwork
 
 
 def load_model(checkpoint_path: str):
@@ -123,7 +125,7 @@ def export_to_onnx(
         print(f"ONNX Runtime verification OK: output shape {ort_output[0].shape}")
     except ImportError:
         print("ONNX Runtime not installed — skipping verification")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"ONNX Runtime verification failed: {e}")
 
     return output_path

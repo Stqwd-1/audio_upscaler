@@ -19,8 +19,9 @@ Usage:
 """
 import argparse
 import os
+
 import torch
-import yaml
+
 from models.sr_network import SRNetwork
 
 
@@ -42,7 +43,7 @@ def main():
     print("=" * 50)
     print()
     print("--- Architecture ---")
-    print(f"Type: U-Net + ResBlocks")
+    print("Type: U-Net + ResBlocks")
     print(f"In channels: {sr_cfg['in_channels']}")
     print(f"Out channels: {sr_cfg['out_channels']}")
     print(f"Base channels: {sr_cfg['base_channels']}")

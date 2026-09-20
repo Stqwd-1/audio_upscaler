@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 
 class SpectralLoss(nn.Module):
@@ -26,9 +26,9 @@ class SpectralLoss(nn.Module):
     """
     def __init__(
         self,
-        fft_sizes: list[int] = None,
-        hop_sizes: list[int] = None,
-        win_sizes: list[int] = None,
+        fft_sizes: list[int] | None = None,
+        hop_sizes: list[int] | None = None,
+        win_sizes: list[int] | None = None,
         loss_weight: float = 4.5,
     ):
         super().__init__()

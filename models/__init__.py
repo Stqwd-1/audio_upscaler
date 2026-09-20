@@ -12,18 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .sr_network import SRNetwork
-from .spectral_unet import SpectralUNet
-from .discriminators import MultiScaleDiscriminator, MultiPeriodDiscriminator, MultiResolutionDiscriminator
+from .discriminators import (
+    MultiPeriodDiscriminator,
+    MultiResolutionDiscriminator,
+    MultiScaleDiscriminator,
+)
 from .hifi_gan import Generator as HiFiGANGenerator
 from .qc import QualityController
+from .spectral_unet import SpectralUNet
+from .sr_network import SRNetwork
 
 __all__ = [
-    "SRNetwork",
-    "SpectralUNet",
-    "MultiScaleDiscriminator",
+    "HiFiGANGenerator",
     "MultiPeriodDiscriminator",
     "MultiResolutionDiscriminator",
-    "HiFiGANGenerator",
+    "MultiScaleDiscriminator",
     "QualityController",
+    "SRNetwork",
+    "SpectralUNet",
 ]

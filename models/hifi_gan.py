@@ -18,9 +18,9 @@
 # original code was released under MIT; this module re-implements it.
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn.utils import weight_norm, remove_weight_norm
+from torch import nn
+from torch.nn.utils import remove_weight_norm, weight_norm
 
 LRELU_SLOPE = 0.1
 
@@ -58,11 +58,11 @@ class Generator(nn.Module):
     def __init__(
         self,
         in_channels: int = 1,
-        upsample_rates: list[int] = None,
-        upsample_kernel_sizes: list[int] = None,
+        upsample_rates: list[int] | None = None,
+        upsample_kernel_sizes: list[int] | None = None,
         upsample_initial_channel: int = 512,
-        resblock_kernel_sizes: list[int] = None,
-        resblock_dilation_sizes: list[list[int]] = None,
+        resblock_kernel_sizes: list[int] | None = None,
+        resblock_dilation_sizes: list[list[int]] | None = None,
     ):
         super().__init__()
         if upsample_rates is None:

@@ -34,7 +34,7 @@ def load_audio(path: str | Path, target_sr: int | None = None, mono: bool = Fals
             audio, sr = sf.read(path, dtype="float32")
         else:
             audio, sr = _load_via_ffmpeg(path, target_sr or 44100)
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         raise RuntimeError(f"Failed to load {path}: {e}")
 
     if mono and audio.ndim > 1:
@@ -61,8 +61,8 @@ def _load_via_ffmpeg(path: Path, target_sr: int) -> tuple[np.ndarray, int]:
 
 
 def _resample(audio: np.ndarray, orig_sr: int, target_sr: int) -> np.ndarray:
-    import torchaudio
     import torch
+    import torchaudio
 
     if audio.ndim == 1:
         waveform = torch.from_numpy(audio).unsqueeze(0).float()

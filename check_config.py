@@ -18,6 +18,7 @@ Usage:
     python check_config.py [checkpoint_path]
 """
 import sys
+
 import torch
 
 checkpoint_path = sys.argv[1] if len(sys.argv) > 1 else "checkpoints/best_model.pt"

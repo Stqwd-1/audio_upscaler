@@ -1,11 +1,12 @@
+
+import pytest
 import torch
 import torchaudio
-import pytest
-from pathlib import Path
 
-from models.sr_network import SRNetwork
 from inference import load_model, upscale_audio
+from models.sr_network import SRNetwork
 from utils.streaming import StreamingProcessor
+
 
 @pytest.fixture
 def mock_wav(tmp_path):
@@ -29,7 +30,7 @@ def mock_checkpoint(tmp_path):
 def test_inference_cpu(mock_wav, mock_checkpoint, tmp_path):
     out_path = tmp_path / "out.wav"
     device = torch.device("cpu")
-    model, spectral_unet, config, _ = load_model(str(mock_checkpoint), device=device)
+    model, spectral_unet, _config, _ = load_model(str(mock_checkpoint), device=device)
     
     upscale_audio(
         input_path=str(mock_wav),
@@ -39,7 +40,7 @@ def test_inference_cpu(mock_wav, mock_checkpoint, tmp_path):
         chunk_size=44100,
         device=device,
         spectral_unet=spectral_unet,
-        config=config,
+        config=_config,
     )
     
     assert out_path.exists()
@@ -51,7 +52,7 @@ def test_inference_cpu(mock_wav, mock_checkpoint, tmp_path):
 def test_streaming_cpu(mock_wav, mock_checkpoint, tmp_path):
     out_path = tmp_path / "out_stream.wav"
     device = torch.device("cpu")
-    model, spectral_unet, config, _ = load_model(str(mock_checkpoint), device=device)
+    model, spectral_unet, _config, _ = load_model(str(mock_checkpoint), device=device)
     
     processor = StreamingProcessor(model, chunk_size=44100, overlap=1024, spectral_unet=spectral_unet, cond=None)
     processor.process_file(

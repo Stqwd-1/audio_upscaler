@@ -21,18 +21,15 @@ Features:
 - Batch processing
 - Model info
 """
-import gradio as gr
-import torch
-import torchaudio
 import os
 import sys
 import time
+
+import gradio as gr
+
 sys.path.insert(0, '.')
 
-from models.sr_network import SRNetwork
-from models.spectral_unet import SpectralUNet
-from inference import load_model, upscale_audio, get_device
-
+from inference import get_device, load_model, upscale_audio
 
 # Global state
 current_model = None
@@ -59,13 +56,14 @@ def load_model_ui(checkpoint_path):
         params = sum(p.numel() for p in current_model.parameters())
         spec_params = sum(p.numel() for p in current_spectral_unet.parameters())
         return f"SRNetwork: {params:,} params\nSpectralUNet: {spec_params:,} params"
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         return f"Error: {e}"
 
 
 def upscale_single(input_file, target_rate, use_qc, n_candidates, min_agreement,
-                    use_tta, transient_strength, progress=gr.Progress()):
+                    use_tta, transient_strength, progress=None):
     """Upscale a single audio file with optional post-processing."""
+    progress = progress or gr.Progress()
     if current_model is None:
         return None, "Load a model first!"
     if input_file is None:
@@ -105,7 +103,7 @@ def upscale_single(input_file, target_rate, use_qc, n_candidates, min_agreement,
             features.append(f"Transient({transient_strength})")
         feat_str = f" [{', '.join(features)}]" if features else ""
         return output_path, f"Done in {elapsed:.1f} sec{feat_str}"
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         return None, f"Error: {e}"
 
 

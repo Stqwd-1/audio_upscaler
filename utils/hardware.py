@@ -13,8 +13,9 @@
 # limitations under the License.
 
 """Hardware detection and VRAM-aware utilities."""
-import torch
 import gc
+
+import torch
 
 
 def get_device_info():

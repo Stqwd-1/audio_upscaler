@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .hardware import get_device_info, auto_batch_size
+from .hardware import auto_batch_size, get_device_info
 from .streaming import StreamingProcessor
 
-__all__ = ["get_device_info", "auto_batch_size", "StreamingProcessor"]
+__all__ = ["StreamingProcessor", "auto_batch_size", "get_device_info"]

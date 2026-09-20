@@ -48,6 +48,7 @@ class StreamingProcessor:
         chunk_size: int = 44100,
         overlap: int = 1024,
         device=None,
+        cond=None,
     ):
         self.model = model
         self.spectral_unet = spectral_unet

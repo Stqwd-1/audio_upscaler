@@ -13,17 +13,13 @@
 # limitations under the License.
 
 import argparse
+import random
 from pathlib import Path
 
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from torch.utils.data import DataLoader
-import random
-
+import yaml
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
-import yaml
 
 try:
     import torch_directml
@@ -31,18 +27,26 @@ try:
 except ImportError:
     HAS_DIRECTML = False
 
-from models.sr_network import SRNetwork
-from models.spectral_unet import SpectralUNet
-from models.hifi_gan import Generator as HiFiGANGenerator
+from data.dataset import create_dataloaders
+from data.degradation import AdvancedDegradation
+from losses import (
+    AdversarialLoss,
+    FeatureMatchingLoss,
+    HFExciterLoss,
+    HighFrequencyLoss,
+    MelLoss,
+    SpectralLoss,
+    WaveLoss,
+)
 from models.discriminators import (
-    MultiScaleDiscriminator,
     MultiPeriodDiscriminator,
     MultiResolutionDiscriminator,
+    MultiScaleDiscriminator,
 )
-from losses import WaveLoss, SpectralLoss, MelLoss, HFExciterLoss, HighFrequencyLoss, AdversarialLoss, FeatureMatchingLoss
-from data.dataset import AudioDataset, create_dataloaders
-from data.degradation import AdvancedDegradation
-from utils.metrics import calculate_psnr, calculate_si_sdr, calculate_lsd
+from models.hifi_gan import Generator as HiFiGANGenerator
+from models.spectral_unet import SpectralUNet
+from models.sr_network import SRNetwork
+from utils.metrics import calculate_lsd, calculate_psnr, calculate_si_sdr
 
 
 def load_config(path: str) -> dict:
@@ -102,7 +106,7 @@ def load_chkpt(model, state, name):
     if result.missing_keys: print(f"Warning ({name}): missing keys {result.missing_keys}")
     if result.unexpected_keys: print(f"Warning ({name}): unexpected keys {result.unexpected_keys}")
 
-def train(config, data_dir: str, output_dir: str, resume_path: str = None):
+def train(config, data_dir: str, output_dir: str, resume_path: str | None = None):
     if isinstance(config, str):
         config = load_config(config)
     output_dir = Path(output_dir)

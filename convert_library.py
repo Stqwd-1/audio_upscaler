@@ -18,11 +18,10 @@ Usage:
     python convert_library.py [input_dir] [output_dir]
     python convert_library.py [library_dir] info
 """
-import os
 import subprocess
 import sys
 from pathlib import Path
-import numpy as np
+
 import soundfile as sf
 
 
@@ -50,7 +49,7 @@ def convert_flac_to_mp3(input_dir, output_dir, bitrate="320k"):
                 "ffmpeg", "-y", "-i", str(flac_file),
                 "-codec:a", "libmp3lame", "-b:a", bitrate,
                 str(mp3_file)
-            ], capture_output=True, text=True, timeout=30)
+            ], capture_output=True, text=True, timeout=30, check=False)
 
             if result.returncode == 0:
                 converted += 1
@@ -78,7 +77,7 @@ def show_library_info(library_dir):
     flac_files = list(flac_dir.glob("*.flac")) if flac_dir.exists() else []
     mp3_files = list(mp3_dir.glob("*.mp3")) if mp3_dir.exists() else []
 
-    print(f"\n=== Library Info ===")
+    print("\n=== Library Info ===")
     print(f"FLAC files: {len(flac_files)}")
     print(f"MP3 files: {len(mp3_files)}")
 
@@ -86,13 +85,13 @@ def show_library_info(library_dir):
         total_size = sum(f.stat().st_size for f in flac_files)
         print(f"Total FLAC size: {total_size / (1024 * 1024 * 1024):.2f} GB")
 
-        print(f"\nSample files:")
+        print("\nSample files:")
         for f in flac_files[:5]:
             try:
                 info = sf.info(str(f))
                 duration = info.duration
                 print(f"  {f.name}: {duration:.1f}s, {info.samplerate}Hz, {info.channels}ch")
-            except Exception:
+            except Exception:  # noqa: BLE001
                 print(f"  {f.name}: (info unavailable)")
 
 

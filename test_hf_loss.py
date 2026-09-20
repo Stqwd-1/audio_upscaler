@@ -13,11 +13,14 @@
 # limitations under the License.
 
 """Quick smoke test for HighFrequencyLoss."""
-import torch
 import sys
+
+import torch
+
 sys.path.insert(0, ".")
 
 from losses.spectral import HighFrequencyLoss
+
 
 def test_high_frequency_loss():
     sr = 96000

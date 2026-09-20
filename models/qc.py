@@ -25,7 +25,7 @@ Three-stage quality pipeline to eliminate hallucinations:
                 Best one is selected by highest mean score.
 """
 import torch
-import torch.nn as nn
+from torch import nn
 
 
 class QualityController:

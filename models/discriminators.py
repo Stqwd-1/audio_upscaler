@@ -16,8 +16,8 @@
 # 2020): https://github.com/jik876/hifi-gan (MIT License).
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 from torch.nn.utils import spectral_norm
 from torch.nn.utils.parametrizations import weight_norm
 
@@ -103,7 +103,7 @@ class DiscriminatorSpectral(nn.Module):
 
 
 class MultiPeriodDiscriminator(nn.Module):
-    def __init__(self, periods: list[int] = None):
+    def __init__(self, periods: list[int] | None = None):
         super().__init__()
         if periods is None:
             periods = [2, 3, 5, 7, 11]
@@ -132,7 +132,7 @@ class MultiPeriodDiscriminator(nn.Module):
 
 
 class MultiScaleDiscriminator(nn.Module):
-    def __init__(self, resolutions: list[int] = None):
+    def __init__(self, resolutions: list[int] | None = None):
         super().__init__()
         if resolutions is None:
             resolutions = [1024, 2048, 4096]

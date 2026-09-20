@@ -12,12 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .wave_loss import WaveLoss
-from .spectral import SpectralLoss, LSDLoss, HFExciterLoss, HighFrequencyLoss
 from .mel_loss import MelLoss
 from .perceptual import AdversarialLoss, FeatureMatchingLoss
+from .spectral import HFExciterLoss, HighFrequencyLoss, LSDLoss, SpectralLoss
+from .wave_loss import WaveLoss
 
 __all__ = [
-    "WaveLoss", "SpectralLoss", "LSDLoss", "HFExciterLoss", "HighFrequencyLoss",
-    "MelLoss", "AdversarialLoss", "FeatureMatchingLoss",
+    "AdversarialLoss",
+    "FeatureMatchingLoss",
+    "HFExciterLoss",
+    "HighFrequencyLoss",
+    "LSDLoss",
+    "MelLoss",
+    "SpectralLoss",
+    "WaveLoss",
 ]

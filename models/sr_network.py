@@ -13,8 +13,7 @@
 # limitations under the License.
 
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
+from torch import nn
 
 
 def _gn(channels: int, groups: int = 8) -> nn.GroupNorm:
@@ -153,7 +152,7 @@ class SRNetwork(nn.Module):
         in_channels: int = 2,
         out_channels: int = 2,
         base_channels: int = 64,
-        channel_multipliers: list[int] = None,
+        channel_multipliers: list[int] | None = None,
         num_res_blocks: int = 8,
         cond_dim: int = 0,
     ):

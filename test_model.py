@@ -30,8 +30,8 @@ import torchaudio
 
 sys.path.insert(0, os.path.dirname(__file__))
 
-from models.sr_network import SRNetwork
 from data.formats import _resample, save_audio
+from models.sr_network import SRNetwork
 
 
 def main():

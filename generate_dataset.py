@@ -12,11 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+from functools import partial
+from multiprocessing import Pool
+
 import numpy as np
 import soundfile as sf
-import os
-from multiprocessing import Pool
-from functools import partial
+
 
 def create_file(freq, output_dir, sr=44100, duration=2):
     filepath = os.path.join(output_dir, f"freq_{freq:05d}hz.wav")

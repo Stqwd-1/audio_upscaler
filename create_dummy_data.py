@@ -1,7 +1,7 @@
 
 import os
-import wave
 import struct
+import wave
 
 os.makedirs('test_data', exist_ok=True)
 for i in range(5):

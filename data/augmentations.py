@@ -20,7 +20,7 @@ import tempfile
 import numpy as np
 import torch
 
-from .transforms import MP3Compression, BandwidthLimiter, QuantizationNoise
+from .transforms import BandwidthLimiter, MP3Compression, QuantizationNoise
 
 
 class AudioAugmentations:
@@ -119,7 +119,7 @@ class AudioAugmentations:
             t = self._torch_bw(t)
             return t.T.numpy().astype(np.float32)
 
-        import scipy.signal as signal
+        from scipy import signal
 
         cutoff = random.uniform(4000, min(16000, sr / 2 - 100))
         nyq = sr / 2
@@ -178,8 +178,8 @@ class AudioAugmentations:
         try:
             for ext in (".wav", ".mp3", ".wav"):
                 # Reserve a name, then release the handle so ffmpeg/soundfile can write to it.
-                tmp = tempfile.NamedTemporaryFile(suffix=ext, delete=False)
-                tmp.close()
+                with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as tmp:
+                    pass
                 tmp_paths.append(tmp.name)
             tmp_in_path, tmp_mp3_path, tmp_out_path = tmp_paths
 
@@ -209,7 +209,7 @@ class AudioAugmentations:
 
             return result.astype(np.float32)
 
-        except Exception:
+        except Exception:  # noqa: BLE001
             return audio
         finally:
             for p in tmp_paths:

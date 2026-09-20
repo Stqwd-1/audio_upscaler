@@ -21,10 +21,11 @@ Simulates real-world degradation:
 - Bandwidth Limiting (resampling-based low-pass)
 - Additive Noise (Gaussian with SNR control)
 """
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
 import random
+
+import torch
+import torch.nn.functional as F
+from torch import nn
 
 
 class AdvancedDegradation(nn.Module):

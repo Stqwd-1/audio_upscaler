@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pathlib import Path
 import random
+from pathlib import Path
 
 import numpy as np
 import torch
 import torchaudio
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader, Dataset
 
 from .augmentations import AudioAugmentations
 from .formats import SUPPORTED_FORMATS, load_audio
@@ -100,18 +100,18 @@ class AudioDataset(Dataset):
         try:
             info = torchaudio.info(path)
             return info.num_channels >= 1
-        except Exception:
+        except Exception:  # noqa: BLE001
             try:
                 audio, _ = load_audio(path, None)
                 return audio.size > 0
-            except Exception:
+            except Exception:  # noqa: BLE001
                 return False
 
     def __len__(self) -> int:
         return len(self.files)
 
     def __getitem__(self, idx: int) -> dict[str, torch.Tensor]:
-        audio, sr = load_audio(self.files[idx], self.sample_rate)
+        audio, _sr = load_audio(self.files[idx], self.sample_rate)
 
         # --- Always stereo: mono -> duplicate, multi-channel -> take first 2 ---
         if audio.ndim == 1:

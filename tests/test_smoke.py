@@ -77,7 +77,7 @@ def _write_tone_wav(path, sr=44100, seconds=1.0):
 
 
 def test_dataset_detects_files_lazily(tmp_path):
-    wav = _write_tone_wav(tmp_path / "tone.wav")
+    _ = _write_tone_wav(tmp_path / "tone.wav")
 
     ds = AudioDataset(
         str(tmp_path),
@@ -119,8 +119,9 @@ def test_train_shapes_batch2():
     assert reconstructed.shape == (b, 2, t)
 
 def test_default_config_loads():
-    import yaml
     from pathlib import Path
+
+    import yaml
     config_path = Path('configs/default.yaml')
     config = yaml.safe_load(config_path.read_text(encoding='utf-8'))
     assert 'model' in config

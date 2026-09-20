@@ -21,12 +21,14 @@ Supports:
 - Transient restoration from original
 - Dynamic quantization (INT8/FP16)
 """
+import argparse
+import os
+import sys
+import time
+
 import torch
 import torchaudio
-import sys
-import os
-import time
-import argparse
+
 sys.path.insert(0, '.')
 
 try:
@@ -35,11 +37,11 @@ try:
 except ImportError:
     HAS_DIRECTML = False
 
-from models.sr_network import SRNetwork
-from models.spectral_unet import SpectralUNet
+from models.discriminators import MultiResolutionDiscriminator
 from models.hifi_gan import Generator as HiFiGANGenerator
 from models.qc import QualityController
-from models.discriminators import MultiResolutionDiscriminator
+from models.spectral_unet import SpectralUNet
+from models.sr_network import SRNetwork
 from utils.post_processing import AudioPostProcessor
 
 
@@ -69,12 +71,12 @@ def quantize_model(model, quant_type: str = "int8"):
             {torch.nn.Linear, torch.nn.Conv1d, torch.nn.ConvTranspose1d},
             dtype=torch.qint8,
         )
-        print(f"Quantized to INT8 (dynamic)")
+        print("Quantized to INT8 (dynamic)")
         return quantized
     elif quant_type == "fp16":
         model_cpu = model.cpu()
         quantized = model_cpu.half()
-        print(f"Converted to FP16")
+        print("Converted to FP16")
         return quantized
     else:
         print(f"Unknown quant_type '{quant_type}', returning original model")
@@ -103,7 +105,7 @@ def load_model(checkpoint_path: str, device, stereo: bool = True):
         if result.unexpected_keys:
             print(f'Warning: unexpected keys in generator: {result.unexpected_keys}')
         model.eval()
-        print(f"HiFi-GAN Generator loaded")
+        print("HiFi-GAN Generator loaded")
     else:
         # SRNetwork
         if stereo:
@@ -128,7 +130,7 @@ def load_model(checkpoint_path: str, device, stereo: bool = True):
 
         model.load_state_dict(state, strict=False)
         model.eval()
-        print(f"SRNetwork loaded")
+        print("SRNetwork loaded")
 
     # SpectralUNet
     spectral_unet = SpectralUNet(in_channels=1, base_channels=32).to(device)

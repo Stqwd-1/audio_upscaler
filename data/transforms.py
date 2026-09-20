@@ -18,11 +18,12 @@
 - BandwidthLimiter: Low-pass filter via resampling
 - QuantizationNoise: Bit-depth reduction
 """
+import io
+import logging
+import random
+
 import torch
 import torchaudio
-import io
-import random
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +60,7 @@ class MP3Compression:
                 loaded_w = torch.nn.functional.pad(loaded_w, (0, waveform.shape[1] - loaded_w.shape[1]))
 
             return loaded_w.to(waveform.device)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.warning(f"MP3 Compression failed: {e}")
             return waveform
 

@@ -15,19 +15,22 @@
 """Optuna hyperparameter optimization for audio upscaler.
 
 Usage:
-    python tuning.py --data-dir D:\path\to\library --trials 20
+    python tuning.py --data-dir D:\\path\to\\library --trials 20
 """
 import argparse
+import os
+import sys
+
 import optuna
 import torch
-import sys
-import os
+
 sys.path.insert(0, '.')
 
-from models.sr_network import SRNetwork
-from losses import SpectralLoss
-from data.dataset import AudioDataset
 from torch.utils.data import DataLoader
+
+from data.dataset import AudioDataset
+from losses import SpectralLoss
+from models.sr_network import SRNetwork
 
 
 def objective(trial, data_dir: str, device):
