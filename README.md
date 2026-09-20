@@ -1,6 +1,8 @@
 # Audio Upscaler
 
-![CI](https://github.com/username/audio_upscaler/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/Stqwd-1/audio_upscaler/actions/workflows/ci.yml/badge.svg)
+
+
 
 
 Neural-network-based audio super-resolution: upscale stereo audio from 44.1 kHz to 96 / 192 / 384 kHz with GAN-based quality control.
@@ -101,32 +103,32 @@ Monitor training with TensorBoard:
 
 ```bash
 tensorboard --logdir checkpoints/logs
-`
+```
 
-### Training Guidelines & Recommendations
 
-To train a robust audio upscaler that actually restores high frequencies (instead of just adding noise), follow these best practices:
+### Обучение: лучшие практики и рекомендации
 
-**1. Dataset Quality (Garbage In, Garbage Out)**
-*   **Source format**: Use strictly lossless audio formats (FLAC, WAV).
-*   **Sample rate**: Your training data MUST have a true high sample rate (at least 96kHz or 192kHz). If you train on 44.1kHz audio that was artificially upsampled to 96kHz without real high-frequency content, the neural network will learn to do exactly that (nothing).
-*   **Avoid MP3 sources**: Do not use converted MP3/AAC files as ground truth. The model uses a degradation pipeline during training to simulate MP3 artifacts, so the *target* audio must be pristine.
+Чтобы модель действительно научилась восстанавливать высокие частоты (а не просто генерировать белый шум), следуйте этим правилам:
 
-**2. Dataset Volume**
-*   **Minimum**: For a proof-of-concept or fine-tuning, 5??10 hours of high-quality audio might be enough.
-*   **Recommended**: For a production-ready model, aim for **50 to 100+ hours** of diverse audio (different genres, instruments, vocals) to prevent the network from overfitting to a specific sound.
-*   The data-dir can contain deeply nested folders; the script will recursively find all valid audio files.
+**1. Качество датасета (Garbage In, Garbage Out)**
+*   **Формат:** Используйте только форматы без потерь (FLAC, WAV).
+*   **Частота дискретизации:** Ваши исходники ДОЛЖНЫ быть в оригинальном высоком качестве (96 кГц или 192 кГц). Если вы скормите сети апскейльнутые MP3, она ничему не научится, так как там физически нет высоких частот.
+*   **Без MP3-оригиналов:** Не используйте конвертированные MP3/AAC файлы как целевые (target). Во время обучения пайплайн сам портит звук (имитируя MP3-артефакты и срез частот), поэтому таргет должен быть идеальным.
 
-**3. Epochs and Duration**
-*   A default setup runs for 30 epochs, which is only a smoke test for large datasets.
-*   For a dataset of ~10 hours, expect to train for **500??1000 epochs** (or roughly 500,000 to 1,000,000 steps) until the adversarial loss stabilizes.
-*   Use configs/cuda.yaml to increase atch_size (e.g., to 4, 8, or 16) depending on your VRAM to speed up training.
+**2. Объем данных**
+*   **Минимум:** Для проверки (proof-of-concept) или дообучения хватит 5-10 часов качественного звука.
+*   **Рекомендуется:** Для создания мощной универсальной модели нужно **от 50 до 100+ часов** музыки разных жанров, чтобы сеть не переобучилась на один инструмент.
+*   Папка `data-dir` может содержать любые подпапки — скрипт рекурсивно найдет все аудиофайлы.
 
-**4. Monitoring (TensorBoard)**
-*   Run 	ensorboard --logdir checkpoints/logs and check the losses.
-*   **Generator vs Discriminator**: It is normal for the Discriminator loss to drop quickly at first. Over time, they should reach an equilibrium. If the discriminator loss goes to exactly 0.0 and stays there, mode collapse has occurred.
-*   **Audio logging**: The training loop saves sample reconstructions in TensorBoard. Listen to them periodically to evaluate perceptual quality!
-``
+**3. Эпохи и время обучения**
+*   Дефолтные 30 эпох в конфигурации — это просто проверка работоспособности.
+*   Для датасета на 10 часов рассчитывайте на **500-1000 эпох** (примерно 500 000 – 1 000 000 шагов), пока loss-функция дискриминатора не стабилизируется.
+*   Обязательно используйте `configs/cuda.yaml` и увеличьте `batch_size` (например, до 4, 8 или 16 в зависимости от VRAM вашей видеокарты), чтобы ускорить обучение.
+
+**4. Мониторинг (TensorBoard)**
+*   Запустите `tensorboard --logdir checkpoints/logs` и следите за графиками потерь.
+*   **Генератор против Дискриминатора:** Это нормально, если потери дискриминатора сначала быстро падают. Со временем они должны выровняться и конкурировать. Если потери дискриминатора упали в 0.0 и не двигаются — произошел mode collapse, нужно снижать learning rate.
+*   **Аудио-примеры:** Цикл обучения регулярно сохраняет примеры восстановления звука прямо в TensorBoard. Слушайте их ушами — метрики не всегда отражают реальное качество!
 
 ### Hyperparameter search
 
