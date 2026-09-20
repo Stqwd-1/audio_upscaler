@@ -188,7 +188,7 @@ class StreamingProcessor:
         phase = torch.angle(spec)
 
         log_mag = torch.log(mag + 1e-7).unsqueeze(1)
-        refined_log_mag = self.spectral_unet(log_mag)
+        refined_log_mag = self.spectral_unet(log_mag.to(next(self.spectral_unet.parameters()).device))
         refined_mag = torch.exp(refined_log_mag.squeeze(1))
 
         complex_spec = refined_mag * torch.exp(1j * phase.to(refined_mag.device))

@@ -97,7 +97,11 @@ def load_model(checkpoint_path: str, device, stereo: bool = True):
     if generator_type == 'hifi_gan':
         hifi_cfg = config['model'].get('hifi_gan', {})
         model = HiFiGANGenerator(**hifi_cfg).to(device)
-        model.load_state_dict(ckpt['generator'], strict=False)
+        result = model.load_state_dict(ckpt['generator'], strict=False)
+        if result.missing_keys:
+            print(f'Warning: missing keys in generator: {result.missing_keys}')
+        if result.unexpected_keys:
+            print(f'Warning: unexpected keys in generator: {result.unexpected_keys}')
         model.eval()
         print(f"HiFi-GAN Generator loaded")
     else:
@@ -129,7 +133,11 @@ def load_model(checkpoint_path: str, device, stereo: bool = True):
     # SpectralUNet
     spectral_unet = SpectralUNet(in_channels=1, base_channels=32).to(device)
     if 'spectral_unet' in ckpt:
-        spectral_unet.load_state_dict(ckpt['spectral_unet'], strict=False)
+        result = spectral_unet.load_state_dict(ckpt['spectral_unet'], strict=False)
+        if result.missing_keys:
+            print(f'Warning: missing keys in spectral_unet: {result.missing_keys}')
+        if result.unexpected_keys:
+            print(f'Warning: unexpected keys in spectral_unet: {result.unexpected_keys}')
         spectral_unet.eval()
         print("SpectralUNet loaded from checkpoint")
     else:
@@ -186,7 +194,7 @@ def _model_forward(model, chunk, spectral_unet=None, cond=None):
         phase = torch.angle(spec)
 
         log_mag = torch.log(mag + 1e-7).unsqueeze(1)
-        refined_log_mag = spectral_unet(log_mag)
+        refined_log_mag = spectral_unet(log_mag.to(next(spectral_unet.parameters()).device))
         refined_mag = torch.exp(refined_log_mag.squeeze(1))
 
         complex_spec = refined_mag * torch.exp(1j * phase.to(refined_mag.device))

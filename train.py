@@ -250,6 +250,10 @@ def train(config, data_dir: str, output_dir: str, resume_path: str = None):
         if use_amp and "scaler_d" in checkpoint:
             scaler_d.load_state_dict(checkpoint["scaler_d"])
         start_epoch = checkpoint["epoch"] + 1
+        if "best_val_loss" in checkpoint:
+            best_val_loss_resume = checkpoint["best_val_loss"]
+        if "patience_counter" in checkpoint:
+            patience_counter_resume = checkpoint["patience_counter"]
         for _ in range(start_epoch):
             scheduler_g.step()
             scheduler_d.step()
@@ -264,9 +268,9 @@ def train(config, data_dir: str, output_dir: str, resume_path: str = None):
     num_sub_disc = 11  # 3 MSD + 5 MPD + 3 MRD
 
     # --- Early Stopping ---
-    best_val_loss = float("inf")
+    best_val_loss = best_val_loss_resume if "best_val_loss_resume" in locals() else float("inf")
     patience = config["training"].get("early_stopping_patience", 0)
-    patience_counter = 0
+    patience_counter = patience_counter_resume if "patience_counter_resume" in locals() else 0
 
     for epoch in range(start_epoch, config["training"]["epochs"]):
         generator.train()
@@ -344,6 +348,9 @@ def train(config, data_dir: str, output_dir: str, resume_path: str = None):
                 final = reconstructed.to(device)
 
                 # --- Generator losses ---
+                toggle_grad(discriminator_s, False)
+                toggle_grad(discriminator_p, False)
+                toggle_grad(discriminator_spec, False)
                 # Waveform losses
                 l_wave = wave_loss(final, high_crop)
 
@@ -405,6 +412,9 @@ def train(config, data_dir: str, output_dir: str, resume_path: str = None):
                 opt_g.zero_grad()
 
             # === DISCRIMINATOR STEP ===
+            toggle_grad(discriminator_s, True)
+            toggle_grad(discriminator_p, True)
+            toggle_grad(discriminator_spec, True)
             with torch.no_grad():
                 final_det = final.detach()
 
@@ -465,6 +475,26 @@ def train(config, data_dir: str, output_dir: str, resume_path: str = None):
 
         # LR schedulers are epoch-based (warmup + cosine), so they step
         # once per epoch — not per batch. Resuming replays these steps.
+        
+        if global_step % accum_steps != 0:
+            if use_amp:
+                scaler_g.unscale_(opt_g)
+                torch.nn.utils.clip_grad_norm_(gen_params_list, grad_clip_max_norm)
+                scaler_g.step(opt_g)
+                scaler_g.update()
+                
+                scaler_d.unscale_(opt_d)
+                torch.nn.utils.clip_grad_norm_(disc_params_list, grad_clip_max_norm)
+                scaler_d.step(opt_d)
+                scaler_d.update()
+            else:
+                torch.nn.utils.clip_grad_norm_(gen_params_list, grad_clip_max_norm)
+                opt_g.step()
+                torch.nn.utils.clip_grad_norm_(disc_params_list, grad_clip_max_norm)
+                opt_d.step()
+            opt_g.zero_grad(set_to_none=True)
+            opt_d.zero_grad(set_to_none=True)
+
         scheduler_g.step()
         scheduler_d.step()
 
