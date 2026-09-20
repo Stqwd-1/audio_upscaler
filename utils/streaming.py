@@ -51,6 +51,7 @@ class StreamingProcessor:
     ):
         self.model = model
         self.spectral_unet = spectral_unet
+        self.cond = cond
         self.chunk_size = chunk_size
         self.overlap = min(overlap, chunk_size // 2)
         self.device = device or torch.device("cpu")
@@ -167,7 +168,7 @@ class StreamingProcessor:
             elif chunk.shape[1] > 2:
                 chunk = chunk[:, :2, :]
 
-        pred = self.model(chunk)
+        pred = self.model(chunk, self.cond) if self.cond is not None else self.model(chunk)
 
         if self.spectral_unet is None:
             return pred
@@ -192,7 +193,7 @@ class StreamingProcessor:
         refined_mag = torch.exp(refined_log_mag.squeeze(1))
 
         complex_spec = refined_mag * torch.exp(1j * phase.to(refined_mag.device))
-        window2 = torch.hann_window(win, device="cpu", dtype=refined_mag.dtype)
+        window2 = torch.hann_window(win, device=refined_mag.device, dtype=refined_mag.dtype)
         refined_wave = torch.istft(complex_spec, n_fft, hop, win, window=window2,
                                     length=pred.shape[-1])
 

@@ -47,7 +47,7 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/stassmeow/audio_upscaler"
+Homepage = "https://github.com/Stqwd-1/audio_upscaler"
 
 [tool.uv]
 dev-dependencies = []

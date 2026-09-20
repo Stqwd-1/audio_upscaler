@@ -90,6 +90,18 @@ def istft_mag(mag, phase, n_fft=1024, hop=256, win=1024, length=None):
     return waveform.to(orig_device)
 
 
+
+def toggle_grad(model, requires_grad):
+    if model is not None:
+        for p in model.parameters():
+            p.requires_grad = requires_grad
+
+def load_chkpt(model, state, name):
+    if model is None: return
+    result = model.load_state_dict(state, strict=False)
+    if result.missing_keys: print(f"Warning ({name}): missing keys {result.missing_keys}")
+    if result.unexpected_keys: print(f"Warning ({name}): unexpected keys {result.unexpected_keys}")
+
 def train(config, data_dir: str, output_dir: str, resume_path: str = None):
     if isinstance(config, str):
         config = load_config(config)
@@ -236,13 +248,13 @@ def train(config, data_dir: str, output_dir: str, resume_path: str = None):
     if resume_path:
         print(f"Resuming from {resume_path}")
         checkpoint = torch.load(resume_path, map_location="cpu", weights_only=True)
-        generator.load_state_dict(checkpoint["generator"], strict=False)
+        load_chkpt(generator, checkpoint["generator"], "generator")
         if "spectral_unet" in checkpoint:
-            spectral_unet.load_state_dict(checkpoint["spectral_unet"], strict=False)
-        discriminator_s.load_state_dict(checkpoint["discriminator_s"], strict=False)
-        discriminator_p.load_state_dict(checkpoint["discriminator_p"], strict=False)
+            load_chkpt(spectral_unet, checkpoint["spectral_unet"], "spectral_unet")
+        load_chkpt(discriminator_s, checkpoint["discriminator_s"], "discriminator_s")
+        load_chkpt(discriminator_p, checkpoint["discriminator_p"], "discriminator_p")
         if "discriminator_spec" in checkpoint:
-            discriminator_spec.load_state_dict(checkpoint["discriminator_spec"], strict=False)
+            load_chkpt(discriminator_spec, checkpoint["discriminator_spec"], "discriminator_spec")
         opt_g.load_state_dict(checkpoint["opt_g"])
         opt_d.load_state_dict(checkpoint["opt_d"])
         if use_amp and "scaler_g" in checkpoint:
@@ -562,7 +574,8 @@ def train(config, data_dir: str, output_dir: str, resume_path: str = None):
                     val_loss_g += wave_loss(final, high_crop).item()
                     val_psnr += calculate_psnr(final, high_crop)
                     val_si_sdr += calculate_si_sdr(final, high_crop)
-                    val_lsd += calculate_lsd(target_spec, pred_spec)
+                    final_spec = stft_mag(final, spec_n_fft, spec_hop, spec_win)
+                    val_lsd += calculate_lsd(target_spec, final_spec)
                     val_count += 1
 
             val_loss_g /= max(val_count, 1)
@@ -586,6 +599,9 @@ def train(config, data_dir: str, output_dir: str, resume_path: str = None):
                     "discriminator_s": discriminator_s.state_dict(),
                     "discriminator_p": discriminator_p.state_dict(),
                     "discriminator_spec": discriminator_spec.state_dict(),
+                    "global_step": global_step,
+                    "scheduler_g": scheduler_g.state_dict(),
+                    "scheduler_d": scheduler_d.state_dict(),
                     "opt_g": opt_g.state_dict(),
                     "opt_d": opt_d.state_dict(),
                     "config": config,
@@ -611,6 +627,9 @@ def train(config, data_dir: str, output_dir: str, resume_path: str = None):
                 "discriminator_s": discriminator_s.state_dict(),
                 "discriminator_p": discriminator_p.state_dict(),
                 "discriminator_spec": discriminator_spec.state_dict(),
+                "global_step": global_step,
+                "scheduler_g": scheduler_g.state_dict(),
+                "scheduler_d": scheduler_d.state_dict(),
                 "opt_g": opt_g.state_dict(),
                 "opt_d": opt_d.state_dict(),
                 "config": config,

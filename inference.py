@@ -198,7 +198,7 @@ def _model_forward(model, chunk, spectral_unet=None, cond=None):
         refined_mag = torch.exp(refined_log_mag.squeeze(1))
 
         complex_spec = refined_mag * torch.exp(1j * phase.to(refined_mag.device))
-        window2 = torch.hann_window(win, device="cpu", dtype=refined_mag.dtype)
+        window2 = torch.hann_window(win, device=refined_mag.device, dtype=refined_mag.dtype)
         refined_wave = torch.istft(complex_spec, n_fft, hop, win, window=window2,
                                     length=pred.shape[-1])
 
