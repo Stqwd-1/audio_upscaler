@@ -1,0 +1,76 @@
+model:
+  generator: "sr_network"
+  sr_network:
+    in_channels: 2
+    out_channels: 2
+    base_channels: 64
+    channel_multipliers: [1, 2, 4, 8]
+    num_res_blocks: 8
+    cond_dim: 32  # FiLM conditioning dimension (0 = disabled)
+  hifi_gan:
+    in_channels: 1
+    upsample_rates: [8, 5, 3]
+    upsample_kernel_sizes: [16, 11, 7]
+    upsample_initial_channel: 512
+    resblock_kernel_sizes: [3, 7, 11]
+    resblock_dilation_sizes: [[1, 3, 5], [1, 3, 5], [1, 3, 5]]
+
+data:
+  sample_rate: 44100
+  target_sample_rate: 96000
+  segment_length: 1.0
+  batch_size: 1
+  num_workers: 0
+  low_sample_rate: 16000
+  val_split: 0.1
+  split_seed: 42
+  augmentation:
+    noise_level: 0.005
+    reverb_prob: 0.3
+    random_resample_prob: 0.5
+    bandwidth_limit_prob: 0.5
+    quantization_prob: 0.3
+    mp3_artifact_prob: 0.3
+
+training:
+  epochs: 30
+  learning_rate: 0.0002
+  betas: [0.5, 0.9]
+  weight_decay: 0.001
+  scheduler: "cosine"
+  warmup_epochs: 5
+  mixed_precision: true
+  gradient_accumulation: 2
+  grad_clip_max_norm: 0.5
+  save_every: 1
+  log_every: 500
+  early_stopping_patience: 10
+
+losses:
+  wave:
+    loss_weight: 1.0
+  spectral:
+    fft_sizes: [1024, 2048, 4096]
+    hop_sizes: [120, 240, 480]
+    win_sizes: [600, 1200, 2400]
+    loss_weight: 4.5
+  mel:
+    n_mels: 80
+    loss_weight: 4.5
+  hf_exciter:
+    enabled: true
+    hf_start_freq: 16000
+    n_fft: 4096
+    loss_weight: 2.0
+  high_frequency:
+    cutoff_freq: 15000
+    loss_weight: 5.0
+  adversarial:
+    loss_weight: 0.1
+  feature_matching:
+    loss_weight: 2.0
+
+inference:
+  chunk_size: 44100
+  overlap: 1024
+  device: "auto"

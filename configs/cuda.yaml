@@ -1,0 +1,53 @@
+model:
+  sr_network:
+    in_channels: 2
+    out_channels: 2
+    base_channels: 64
+    channel_multipliers: [1, 2, 4, 8]
+    num_res_blocks: 8
+
+data:
+  sample_rate: 44100
+  target_sample_rate: 96000
+  segment_length: 1.0
+  batch_size: 4            # 4 для 8GB VRAM, 8 для 16GB+
+  num_workers: 4           # параллельная загрузка данных
+  low_sample_rate: 16000
+  augmentation:
+    noise_level: 0.005
+    reverb_prob: 0.3
+    random_resample_prob: 0.5
+    bandwidth_limit_prob: 0.5
+    quantization_prob: 0.3
+    mp3_artifact_prob: 0.3
+
+training:
+  epochs: 50
+  learning_rate: 0.0002
+  betas: [0.5, 0.9]
+  weight_decay: 0.001
+  scheduler: "cosine"
+  warmup_epochs: 5
+  mixed_precision: true    # AMP работает на CUDA, ускоряет ~1.5x
+  gradient_accumulation: 2
+  save_every: 2
+  log_every: 500
+
+losses:
+  spectral:
+    fft_sizes: [1024, 2048, 4096]
+    hop_sizes: [120, 240, 480]
+    win_sizes: [600, 1200, 2400]
+    loss_weight: 4.5
+  mel:
+    n_mels: 80
+    loss_weight: 4.5
+  adversarial:
+    loss_weight: 1.0
+  feature_matching:
+    loss_weight: 2.0
+
+inference:
+  chunk_size: 44100
+  overlap: 1024
+  device: "auto"
