@@ -106,29 +106,29 @@ tensorboard --logdir checkpoints/logs
 ```
 
 
-### Обучение: лучшие практики и рекомендации
+### Training Guidelines & Recommendations
 
-Чтобы модель действительно научилась восстанавливать высокие частоты (а не просто генерировать белый шум), следуйте этим правилам:
+To ensure the model actually learns to reconstruct high frequencies (rather than just generating white noise), follow these best practices:
 
-**1. Качество датасета (Garbage In, Garbage Out)**
-*   **Формат:** Используйте только форматы без потерь (FLAC, WAV).
-*   **Частота дискретизации:** Ваши исходники ДОЛЖНЫ быть в оригинальном высоком качестве (96 кГц или 192 кГц). Если вы скормите сети апскейльнутые MP3, она ничему не научится, так как там физически нет высоких частот.
-*   **Без MP3-оригиналов:** Не используйте конвертированные MP3/AAC файлы как целевые (target). Во время обучения пайплайн сам портит звук (имитируя MP3-артефакты и срез частот), поэтому таргет должен быть идеальным.
+**1. Dataset Quality (Garbage In, Garbage Out)**
+*   **Format:** Use strictly lossless audio formats (FLAC, WAV).
+*   **Sample Rate:** Your source audio MUST be originally in high-resolution (96 kHz or 192 kHz). If you feed the network upscaled MP3s, it won't learn anything because the high frequencies physically do not exist in the source.
+*   **No MP3 Originals:** Do not use converted MP3/AAC files as ground truth (target). The training pipeline dynamically degrades the audio (simulating MP3 artifacts and frequency cutoffs), so the *target* audio must be pristine.
 
-**2. Объем данных**
-*   **Минимум:** Для проверки (proof-of-concept) или дообучения хватит 5-10 часов качественного звука.
-*   **Рекомендуется:** Для создания мощной универсальной модели нужно **от 50 до 100+ часов** музыки разных жанров, чтобы сеть не переобучилась на один инструмент.
-*   Папка `data-dir` может содержать любые подпапки — скрипт рекурсивно найдет все аудиофайлы.
+**2. Dataset Volume**
+*   **Minimum:** For a proof-of-concept or fine-tuning, 5-10 hours of high-quality audio is sufficient.
+*   **Recommended:** For a robust, universal model, aim for **50 to 100+ hours** of diverse music across different genres to prevent the network from overfitting to a specific sound or instrument.
+*   The `data-dir` can contain deeply nested folders; the script will recursively find all valid audio files.
 
-**3. Эпохи и время обучения**
-*   Дефолтные 30 эпох в конфигурации — это просто проверка работоспособности.
-*   Для датасета на 10 часов рассчитывайте на **500-1000 эпох** (примерно 500 000 – 1 000 000 шагов), пока loss-функция дискриминатора не стабилизируется.
-*   Обязательно используйте `configs/cuda.yaml` и увеличьте `batch_size` (например, до 4, 8 или 16 в зависимости от VRAM вашей видеокарты), чтобы ускорить обучение.
+**3. Epochs and Training Time**
+*   The default 30 epochs in the config is just for smoke-testing.
+*   For a 10-hour dataset, expect to train for **500-1000 epochs** (roughly 500,000 to 1,000,000 steps) until the discriminator loss stabilizes.
+*   Use `configs/cuda.yaml` and increase the `batch_size` (e.g., to 4, 8, or 16 depending on your GPU VRAM) to speed up training.
 
-**4. Мониторинг (TensorBoard)**
-*   Запустите `tensorboard --logdir checkpoints/logs` и следите за графиками потерь.
-*   **Генератор против Дискриминатора:** Это нормально, если потери дискриминатора сначала быстро падают. Со временем они должны выровняться и конкурировать. Если потери дискриминатора упали в 0.0 и не двигаются — произошел mode collapse, нужно снижать learning rate.
-*   **Аудио-примеры:** Цикл обучения регулярно сохраняет примеры восстановления звука прямо в TensorBoard. Слушайте их ушами — метрики не всегда отражают реальное качество!
+**4. Monitoring (TensorBoard)**
+*   Run `tensorboard --logdir checkpoints/logs` to monitor loss graphs.
+*   **Generator vs Discriminator:** It is normal for the discriminator loss to drop quickly at first. Over time, they should balance out and compete. If the discriminator loss drops to exactly 0.0 and stays there, mode collapse has occurred, and you need to lower the learning rate.
+*   **Audio Samples:** The training loop periodically saves reconstructed audio samples directly to TensorBoard. Listen to them — metrics do not always reflect real perceptual quality!
 
 ### Hyperparameter search
 
