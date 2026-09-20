@@ -2,6 +2,7 @@
 import pytest
 import torch
 import torchaudio
+import soundfile as sf
 
 from inference import load_model, upscale_audio
 from models.sr_network import SRNetwork
@@ -13,15 +14,15 @@ def mock_wav(tmp_path):
     wav_path = tmp_path / "mock.wav"
     # Create 0.5s stereo audio at 44100Hz
     audio = torch.randn(2, 22050)
-    torchaudio.save(wav_path, audio, 44100)
+    sf.write(wav_path, audio.numpy().T, 44100)
     return wav_path
 
 @pytest.fixture
 def mock_checkpoint(tmp_path):
     ckpt_path = tmp_path / "mock_ckpt.pt"
-    generator = SRNetwork(in_channels=2, out_channels=2, nf=16)
+    generator = SRNetwork(in_channels=2, out_channels=2, base_channels=16)
     config = {
-        "model": {"generator": "sr_network", "sr_network": {"nf": 16}},
+        "model": {"generator": "sr_network", "sr_network": {"base_channels": 16}},
         "data": {"sample_rate": 44100}
     }
     torch.save({"generator": generator.state_dict(), "config": config}, ckpt_path)
