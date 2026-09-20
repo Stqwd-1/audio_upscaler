@@ -101,7 +101,32 @@ Monitor training with TensorBoard:
 
 ```bash
 tensorboard --logdir checkpoints/logs
-```
+`
+
+### Training Guidelines & Recommendations
+
+To train a robust audio upscaler that actually restores high frequencies (instead of just adding noise), follow these best practices:
+
+**1. Dataset Quality (Garbage In, Garbage Out)**
+*   **Source format**: Use strictly lossless audio formats (FLAC, WAV).
+*   **Sample rate**: Your training data MUST have a true high sample rate (at least 96kHz or 192kHz). If you train on 44.1kHz audio that was artificially upsampled to 96kHz without real high-frequency content, the neural network will learn to do exactly that (nothing).
+*   **Avoid MP3 sources**: Do not use converted MP3/AAC files as ground truth. The model uses a degradation pipeline during training to simulate MP3 artifacts, so the *target* audio must be pristine.
+
+**2. Dataset Volume**
+*   **Minimum**: For a proof-of-concept or fine-tuning, 5??10 hours of high-quality audio might be enough.
+*   **Recommended**: For a production-ready model, aim for **50 to 100+ hours** of diverse audio (different genres, instruments, vocals) to prevent the network from overfitting to a specific sound.
+*   The data-dir can contain deeply nested folders; the script will recursively find all valid audio files.
+
+**3. Epochs and Duration**
+*   A default setup runs for 30 epochs, which is only a smoke test for large datasets.
+*   For a dataset of ~10 hours, expect to train for **500??1000 epochs** (or roughly 500,000 to 1,000,000 steps) until the adversarial loss stabilizes.
+*   Use configs/cuda.yaml to increase atch_size (e.g., to 4, 8, or 16) depending on your VRAM to speed up training.
+
+**4. Monitoring (TensorBoard)**
+*   Run 	ensorboard --logdir checkpoints/logs and check the losses.
+*   **Generator vs Discriminator**: It is normal for the Discriminator loss to drop quickly at first. Over time, they should reach an equilibrium. If the discriminator loss goes to exactly 0.0 and stays there, mode collapse has occurred.
+*   **Audio logging**: The training loop saves sample reconstructions in TensorBoard. Listen to them periodically to evaluate perceptual quality!
+``
 
 ### Hyperparameter search
 
